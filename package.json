@@ -1,0 +1,12 @@
+{
+  "name": "express",
+  "version": "1.0.0",
+  "main": "src/express.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node test/app.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
