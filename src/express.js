@@ -3,15 +3,33 @@ const url = require('url');
 
 function createApplication() {
   function app(req, res) {
-    for (let i = 0; i < app.routes.length; i++) {
-      const { method, path, handler } = app.routes[i];
+    let index = 0;
+
+    function next() {
+      if (index >= app.routes.length) {
+        return;
+      }
+
+      const { method, path, handler } = app.routes[index++];
       const m = req.method.toLowerCase();
       const { pathname } = url.parse(req.url);
-      
-      if ((method === m || method === 'all') && (path === pathname || path === '*')) {
-        return handler(req, res);
+
+      if (method === 'middle') {
+        if (pathname.startsWith(path)) {
+          handler(req, res, next);
+        } else {
+          next();
+        }
+      } else {
+        if ((method === m || method === 'all') && (path === pathname || path === '*')) {
+          handler(req, res, next);
+        } else {
+          next();
+        }
       }
     }
+
+    next();
   }
 
   app.routes = [];
@@ -32,6 +50,19 @@ function createApplication() {
     const server = http.createServer(app);
 
     server.listen(...args);
+  };
+
+  app.use = function (path, handler) {
+    if (typeof path === 'function') {
+      handler = path;
+      path = '/';
+    }
+
+    app.routes.push({
+      method: 'middle',
+      path,
+      handler
+    });
   };
 
   return app;
